@@ -48,17 +48,27 @@ course no guarantee can be given.
 The flow is roughly:
 
 1. sanity checks
-   You don't want to do this in the middle of a rebase
+
+You don't want to do this in the middle of a rebase
+
 2. Check for new files
-   exit if there are, unless allowed in config
+
+exit if there are, unless allowed in config
+
 2. check for auto-commitable changes
+
 3. perform auto-commit
-   one more check for leftover changes / general tidyness
+
+3. one more check for leftover changes / general tidyness
+
 4. fetch upstream
+
 5. Relate upstream to ours
-   ahead -> push
-   behind -> pull
-   diverged -> rebase, then push
+
+    ahead -> push
+    behind -> pull
+    diverged -> rebase, then push
+
 6. At exit, check sync state once more
 
 On the first invocation, `git-sync` will ask you to whitelist the
