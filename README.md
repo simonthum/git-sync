@@ -47,29 +47,14 @@ course no guarantee can be given.
 
 The flow is roughly:
 
-1. sanity checks
-
-You don't want to do this in the middle of a rebase
-
-2. Check for new files
-
-exit if there are, unless allowed in config
-
-2. check for auto-commitable changes
-
-3. perform auto-commit
-
-3. one more check for leftover changes / general tidyness
-
-4. fetch upstream
-
-5. Relate upstream to ours
-
-    ahead -> push
-    behind -> pull
-    diverged -> rebase, then push
-
-6. At exit, check sync state once more
+1. sanity checks. You don't want to do this in the middle of a rebase.
+2. Check for new files; exit if there are, unless allowed in config.
+3. Check for auto-commitable changes.
+4. perform auto-commit
+5. one more check for leftover changes / general tidyness
+6. fetch upstream
+7. Relate upstream to ours. If ahead, push. If behind, pull. If diverged, rebase, then push.
+6. At exit, assert sync state once more just to be safe.
 
 On the first invocation, `git-sync` will ask you to whitelist the
 current branch for sync using git config. This has to be done once for
