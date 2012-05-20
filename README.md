@@ -46,6 +46,7 @@ course no guarantee can be given.
 ## How does it work?
 
 The flow is roughly:
+
 1. sanity checks
    You don't want to do this in the middle of a rebase
 2. Check for new files
