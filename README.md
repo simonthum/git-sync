@@ -13,7 +13,7 @@ Licensed under CC0
 ## One more git sync script? Seriously?
 
 Unlike the myriad of scripts to do just that already available,
-it follows the KISS principle: It is small, requires nothing but
+it follows the KISS principle: It is safe, small, requires nothing but
 git and bash, but does not even try to shield you from git.
 
 It is ultimately intended for git-savy people. Tested on msysgit and a
@@ -25,6 +25,10 @@ eyes bleed, but for some reason it works.
 It will likely get from you from a dull normal git repo with trivial
 changes to an updated dull normal git repo equal to origin. No more,
 no less.
+
+Care has been taken that any kind of problem, pre-existing or not,
+results in clear error messages and non-zero return code, but of
+course no guarantee can be given.
 
 The intent is to do everything that's needed to sync
 automatically, and resort to manual intervention as soon
@@ -38,10 +42,6 @@ Just call `git-sync` inside your average joe's repository (not in the
 middle of a rebase, git-am, merge or whatever, not detached, no
 untracked files) and everything will likely just work. If you don't
 push in an intertwined manner, `git-sync` is virtually guaranteed to work.
-
-Care has been taken that any kind of problem, pre-existing or not,
-results in clear error messages and non-zero return code, but of
-course no guarantee can be given.
 
 ## How does it work?
 
