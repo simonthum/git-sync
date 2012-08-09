@@ -157,7 +157,7 @@ exit_assuming_sync() {
 	exit 0;
     else
 	echo "git-sync: Synchronization FAILED! You should definitely check your repository carefully!"
-	echo "(Possibly, a concurrent push to $remote_name screwed it?)"
+	echo "(Possibly a transient network problem? Try gain in that case.)"
 	exit 3
     fi
 }
@@ -174,7 +174,7 @@ elif [[ "NOGIT" = "$rstate" ]] ; then
     echo "git-sync: No git repository detected. Exiting."
     exit 128 # matches git's error code
 else
-    echo "git-sync: git repo state considered unsafe for sync: $(git_repo_state)"
+    echo "git-sync: Git repo state considered unsafe for sync: $(git_repo_state)"
     exit 2
 fi
 
@@ -197,7 +197,7 @@ if [ "true" != "$(git config --get --bool branch.$branch_name.sync)" ] ; then
     echo
     echo "to whitelist branch $branch_name for synchronization."
     echo "Branch $branch_name has to have a same-named remote branch"
-    echo "for this script to work."
+    echo "for git-sync to work."
     echo
     echo "(If you don't know what this means, you should change that"
     echo "before relying on this script. You have been warned.)"
@@ -208,7 +208,7 @@ fi
 # while at it, determine the remote to operate on
 remote_name=$(git config --get branch.$branch_name.remote)
 
-echo "git-sync: using $remote_name/$branch_name"
+echo "git-sync: Using $remote_name/$branch_name"
 
 # check for intentionally unhandled file states
 if [ ! -z "$(check_initial_file_state)" ] ; then
@@ -237,17 +237,17 @@ if [ ! -z "$(local_changes)" ]; then
     # after autocommit, we should be clean
     rstate="$(git_repo_state)"
     if [[ ! -z "$rstate" ]]; then
-	echo "git-sync: Auto-commit left uncommited changes. Cannot continue."
+	echo "git-sync: Auto-commit left uncommited changes. Please add or remove them as desired and retry."
 	exit 1
     fi
 fi
 
 # fetch remote to get to the current sync state
 # TODO make fetching/pushing optional
-echo "fetching from $remote_name"
+echo "git-sync: Fetching from $remote_name"
 git fetch $remote_name
 if [ $? != 0 ] ; then
-    echo "git-sync: git fetch $remote_name returned non-zero. Cannot continue."
+    echo "git-sync: git fetch $remote_name returned non-zero. Likely a network problem; exiting."
     exit 3
 fi
 
@@ -260,12 +260,12 @@ case "$(sync_state)" in
 	exit_assuming_sync
 	;;
 "ahead")
-	echo "git-sync: Pushing changes"
+	echo "git-sync: Pushing changes..."
 	git push
 	if [ $? == 0 ]; then
 	    exit_assuming_sync
 	else
-	    echo "git-sync: git push returned non-zero. Possibly a connection failure."
+	    echo "git-sync: git push returned non-zero. Likely a connection failure."
 	    exit 3
 	fi
 	;;
@@ -288,7 +288,7 @@ case "$(sync_state)" in
 	    git push
 	    exit_assuming_sync
 	else
-	    echo "git-sync: Rebasing failed, likely there are conflicting changes."
+	    echo "git-sync: Rebasing failed, likely there are conflicting changes. Resolve them and finish the rebase before repeating git-sync."
 	    exit 1
 	fi
 	# TODO: save master, if rebasing fails, make a branch of old master

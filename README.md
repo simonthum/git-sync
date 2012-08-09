@@ -16,9 +16,11 @@ Unlike the myriad of scripts to do just that already available,
 it follows the KISS principle: It is safe, small, requires nothing but
 git and bash, but does not even try to shield you from git.
 
-It is ultimately intended for git-savy people. Tested on msysgit and a
-real bash. In case you know bash scripting, it will probably make your
-eyes bleed, but for some reason it works.
+It is ultimately intended for git-savy people. As a rule of thumb, if
+you know how to complete a failed rebase you're fine.
+
+Tested on msysgit and a real bash. In case you know bash scripting, it
+will probably make your eyes bleed, but for some reason it works.
 
 ### What does it do?
 
@@ -40,8 +42,10 @@ be safe.
 
 Just call `git-sync` inside your average joe's repository (not in the
 middle of a rebase, git-am, merge or whatever, not detached, no
-untracked files) and everything will likely just work. If you don't
-push in an intertwined manner, `git-sync` is virtually guaranteed to work.
+untracked files) and everything will likely just work. Else, a clear
+error message should appear. If you don't sync in an intertwined
+manner (from multiple repositories/machines), `git-sync` is virtually
+guaranteed to work.
 
 ## How does it work?
 
@@ -49,7 +53,7 @@ The flow is roughly:
 
 1. sanity checks. You don't want to do this in the middle of a rebase.
 2. Check for new files; exit if there are, unless allowed in config.
-3. Check for auto-commitable changes.
+3. Check for auto-commitable changes (see syncNewFiles option).
 4. perform auto-commit
 5. one more check for leftover changes / general tidyness
 6. fetch upstream
@@ -58,7 +62,7 @@ The flow is roughly:
 
 On the first invocation, `git-sync` will ask you to whitelist the
 current branch for sync using git config. This has to be done once for
-every copy.
+every repository (and branch, for completeness).
 
 ## Options
 
@@ -66,8 +70,10 @@ There are two `git config`-based options for tailoring your sync:
 
     branch.$branch_name.syncNewFiles (bool)
     
-Tells git-sync to invoke auto-commit even if new (untracked)
-files are present. Normally you have to commit those yourself.
+Tells git-sync to invoke auto-commit even if new (untracked) files are
+present. Normally you have to commit those yourself to prevent
+accidential additions. git-sync will exit at stage 3 with an
+explanation in that case.
 
     branch.$branch_name.autocommitscript (string)
 	
@@ -76,7 +82,7 @@ auto-commit. Here you can run a commit script which should not
 leave any uncommited state. The default will commit modified or
 all files with a more or less useful message.
 
-By default commit is done using:
+By default, commit is done using:
 
     git add -u ; git commit -m "changes from $(uname -n) on $(date)"
 
