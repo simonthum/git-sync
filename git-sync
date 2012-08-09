@@ -270,13 +270,12 @@ case "$(sync_state)" in
 	fi
 	;;
 "behind")
-	echo "git-sync: we are behind, fast-forwarding."
-        # TODO this should be with fetch's --dry-run
-	git pull --ff-only
+	echo "git-sync: We are behind, fast-forwarding..."
+	git merge --ff --ff-only
 	if [ $? == 0 ]; then
 	    exit_assuming_sync
 	else
-	    echo "git pull --ff-only returned non-zero ($?). Exiting."
+	    echo "git-sync: git merge --ff --ff-only returned non-zero ($?). Exiting."
 	    exit 2
 	fi
 	;;
