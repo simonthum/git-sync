@@ -188,7 +188,15 @@ if [ -z "$branch_name" ] ; then
     exit 2
 fi
 
-# check if current branch is configured
+# while at it, determine the remote to operate on
+remote_name=$(git config --get branch.$branch_name.remote)
+
+if [ -z "$remote_name" ] ; then
+    echo "git-sync: the current branch does not have a configured remote."
+    exit 2
+fi
+
+# check if current branch is configured for sync
 if [ "true" != "$(git config --get --bool branch.$branch_name.sync)" ] ; then
     echo
     echo "git-sync: Please use"
@@ -205,8 +213,6 @@ if [ "true" != "$(git config --get --bool branch.$branch_name.sync)" ] ; then
     exit 1
 fi
 
-# while at it, determine the remote to operate on
-remote_name=$(git config --get branch.$branch_name.remote)
 
 echo "git-sync: Using $remote_name/$branch_name"
 
