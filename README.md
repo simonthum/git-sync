@@ -14,7 +14,8 @@ Licensed under CC0
 
 Unlike the myriad of scripts to do just that already available,
 it follows the KISS principle: It is safe, small, requires nothing but
-git and bash, but does not even try to shield you from git.
+git and bash, but does not even try to shield you from git. It is
+non-interactive, but will probably leave with a useful hint or error.
 
 It is ultimately intended for git-savy people. As a rule of thumb, if
 you know how to complete a failed rebase you're fine.
@@ -38,23 +39,39 @@ as something non-trivial occurs. It is designed to be safe
 in that `git-sync` will likely refuse to do anything not known to
 be safe.
 
+You can invoke git-sync in "check" mode, in which git-sync will not do
+anything except return zero if syncing may start, and non-zero if
+manual intervention is required.
+
 ### How am I supposed to use it?
 
-Just call `git-sync` inside your average joe's repository (not in the
-middle of a rebase, git-am, merge or whatever, not detached, no
-untracked files) and everything will likely just work. Else, a clear
+    git-sync [mode]
+
+Mode can be empty, sync, or check.
+
+In "check" mode, it will indicate if syncing may start. This is useful
+to see if manual intervention is required (indicated by text and
+non-zero exit code).
+
+In sync mode (the default), just calling `git-sync` inside your
+repository will sync with the remote, if the current branch is
+whitelisted.  The repository must not be in the middle of a rebase,
+git-am, merge or whatever, not detached, and untracked files may also
+be a problem (see Options). Likely, sync will just work. Else, a clear
 error message should appear. If you don't sync in an intertwined
 manner (from multiple repositories/machines), `git-sync` is virtually
-guaranteed to work.
+guaranteed to succeed. Otherwise it will try to rebase, which may
+fail. This is where you'll need your git skills.
 
 ## How does it work?
 
 The flow is roughly:
 
 1. sanity checks. You don't want to do this in the middle of a rebase.
-2. Check for new files; exit if there are, unless allowed in config.
-3. Check for auto-commitable changes (see syncNewFiles option).
-4. perform auto-commit
+2. Check for new files; exit if there are, unless allowed (see Options).
+2b. In check mode, exit with 0 here.
+3. Check for auto-commitable changes.
+4. perform auto-commit (see Options)
 5. one more check for leftover changes / general tidyness
 6. fetch upstream
 7. Relate upstream to ours. If ahead, push. If behind, pull. If diverged, rebase, then push.

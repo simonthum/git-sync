@@ -15,14 +15,24 @@
 # it follows the KISS principle: It is small, requires nothing but
 # git and bash, but does not even try to shield you from git.
 #
-# It will likely get from you from a dull normal git repo with trivial
+# Mode sync (default)
+#
+# Sync will likely get from you from a dull normal git repo with trivial
 # changes to an updated dull normal git repo equal to origin. No more,
 # no less. The intent is to do everything that's needed to sync
 # automatically, and resort to manual intervention as soon
 # as something non-trivial occurs. It is designed to be safe
 # in that it will likely refuse to do anything not known to
 # be safe.
-
+#
+# Mode check
+#
+# Check only performs the basic checks sync checks for to
+# make sure the repository is in a state sufficiently "normal"
+# to continue syncing, i.e. committing changes, pull etc. without
+# losing any data. When check returns 0, sync can start immediately.
+# This does not, however, indicate that syncing is at all likely to
+# succeed.
 
 # command used to auto-commit file modifications
 DEFAULT_AUTOCOMMIT_CMD="git add -u ; git commit -m \"changes from $(uname -n) on $(date)\";"
@@ -169,7 +179,7 @@ exit_assuming_sync() {
 # first some sanity checks
 rstate="$(git_repo_state)"
 if [[ -z "$rstate" || "|DIRTY" = "$rstate" ]]; then
-    echo "git-sync: Preparing for sync. Repo in $(__gitdir)"
+    echo "git-sync: Preparing. Repo in $(__gitdir)"
 elif [[ "NOGIT" = "$rstate" ]] ; then
     echo "git-sync: No git repository detected. Exiting."
     exit 128 # matches git's error code
@@ -213,6 +223,17 @@ if [ "true" != "$(git config --get --bool branch.$branch_name.sync)" ] ; then
     exit 1
 fi
 
+# determine mode
+if [[ -z "$1" || "$1" == "sync" ]]; then
+    mode="sync"
+elif [[ "check" == "$1" ]]; then
+    mode="check"
+else
+    echo "git-sync: Mode $1 not recognized"
+    exit 100
+fi
+
+echo "git-sync: Mode $mode"
 
 echo "git-sync: Using $remote_name/$branch_name"
 
@@ -221,6 +242,12 @@ if [ ! -z "$(check_initial_file_state)" ] ; then
     echo "git-sync: There are changed files you should probably handle manually."
     git status
     exit 1
+fi
+
+# if in check mode, this is all we need to know
+if [ $mode == "check" ] ; then
+    echo "git-sync: check OK; sync may start."
+    exit 0
 fi
 
 # check if we have to commit local changes, if yes, do so
@@ -299,3 +326,4 @@ case "$(sync_state)" in
 	# TODO: save master, if rebasing fails, make a branch of old master
 	;;
 esac
+
