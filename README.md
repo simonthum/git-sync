@@ -16,7 +16,7 @@ Suppose you have a set of text files you care about, multiple machines
 to work on, and a central git repository (a.k.a. bare reporitory) at
 your disposal. You do not care about atomic commits, but coarse
 versioning and backup is grave. For example, server configuration or
-[http://orgmode.org][org-mode] files.
+[org-mode](http://orgmode.org) files.
 
 In that case, git-sync will help you keep things in sync.
 
