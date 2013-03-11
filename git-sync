@@ -294,7 +294,7 @@ case "$(sync_state)" in
 	;;
 "ahead")
 	echo "git-sync: Pushing changes..."
-	git push
+	git push $remote_name $branch_name:$branch_name
 	if [ $? == 0 ]; then
 	    exit_assuming_sync
 	else
@@ -317,7 +317,7 @@ case "$(sync_state)" in
 	git rebase $remote_name/$branch_name
 	if [[ $? == 0 && -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]] ; then
 	    echo "git-sync: Rebasing went fine, pushing..."
-	    git push
+	    git push $remote_name $branch_name:$branch_name
 	    exit_assuming_sync
 	else
 	    echo "git-sync: Rebasing failed, likely there are conflicting changes. Resolve them and finish the rebase before repeating git-sync."
