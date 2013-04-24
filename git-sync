@@ -126,7 +126,7 @@ check_initial_file_state()
 # used to decide if autocommit should be invoked
 local_changes()
 {
-    if [ ! -z "$(git status --short | grep -E '^[^U\?][^U\?]*')" ]; then
+    if [ ! -z "$(git status --porcelain | grep -E '^(\?\?|[MARC] |[ MARC][MD])*')" ]; then
 	echo "LocalChanges"
     fi
 }
