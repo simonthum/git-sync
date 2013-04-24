@@ -167,7 +167,7 @@ exit_assuming_sync() {
 	exit 0;
     else
 	echo "git-sync: Synchronization FAILED! You should definitely check your repository carefully!"
-	echo "(Possibly a transient network problem? Try gain in that case.)"
+	echo "(Possibly a transient network problem? Please try again in that case.)"
 	exit 3
     fi
 }
