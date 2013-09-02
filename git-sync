@@ -264,7 +264,7 @@ if [ ! -z "$(local_changes)" ]; then
         autocommit_cmd=${DEFAULT_AUTOCOMMIT_CMD}
     fi
     
-    echo "git-sync: Committing local chages using ${autocommit_cmd}"
+    echo "git-sync: Committing local changes using ${autocommit_cmd}"
     eval $autocommit_cmd
 
     # after autocommit, we should be clean
