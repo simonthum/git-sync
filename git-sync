@@ -35,10 +35,13 @@
 # succeed.
 
 # command used to auto-commit file modifications
-DEFAULT_AUTOCOMMIT_CMD="git add -u ; git commit -m \"changes from $(uname -n) on $(date)\";"
+DEFAULT_AUTOCOMMIT_CMD="git add -u ; git commit -m \"%message\";"
 
 # command used to auto-commit all changes
-ALL_AUTOCOMMIT_CMD="git add -A ; git commit -m \"changes from $(uname -n) on $(date)\";"
+ALL_AUTOCOMMIT_CMD="git add -A ; git commit -m \"%message\";"
+
+# default commit message substituted into autocommit commands
+DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 
 
 # AUTOCOMMIT_CMD="echo \"Please commit or stash pending changes\"; exit 1;"
@@ -263,7 +266,13 @@ if [ ! -z "$(local_changes)" ]; then
     else
         autocommit_cmd=${DEFAULT_AUTOCOMMIT_CMD}
     fi
-    
+
+    commit_msg="$(git config --get branch.$branch_name.syncCommitMsg)"
+    if [ "" == "$commit_msg" ]; then
+      commit_msg=${DEFAULT_AUTOCOMMIT_MSG}
+    fi
+    autocommit_cmd=$(echo "$autocommit_cmd" | sed "s/%message/$commit_msg/")
+
     echo "git-sync: Committing local changes using ${autocommit_cmd}"
     eval $autocommit_cmd
 
