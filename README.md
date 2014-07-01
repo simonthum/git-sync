@@ -94,7 +94,7 @@ name and time by default.
 
 ## Options
 
-There are two `git config`-based options for tailoring your sync:
+There are three `git config`-based options for tailoring your sync:
 
     branch.$branch_name.syncNewFiles (bool)
     
@@ -102,6 +102,11 @@ Tells git-sync to invoke auto-commit even if new (untracked) files are
 present. Normally you have to commit those yourself to prevent
 accidential additions. git-sync will exit at stage 3 with an
 explanation in that case.
+
+    branch.$branch_name.syncCommitMsg (string)
+
+A string which will be used in place of the default commit message (as shown
+below).
 
     branch.$branch_name.autocommitscript (string)
 	
