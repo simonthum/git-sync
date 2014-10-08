@@ -287,7 +287,7 @@ fi
 # fetch remote to get to the current sync state
 # TODO make fetching/pushing optional
 echo "git-sync: Fetching from $remote_name"
-git fetch $remote_name
+git fetch $remote_name $branch_name
 if [ $? != 0 ] ; then
     echo "git-sync: git fetch $remote_name returned non-zero. Likely a network problem; exiting."
     exit 3
