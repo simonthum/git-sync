@@ -23,7 +23,8 @@ In that case, git-sync will help you keep things in sync.
 Unlike the myriad of scripts to do just that already available,
 it follows the KISS principle: It is safe, small, requires nothing but
 git and bash, but does not even try to shield you from git. It is
-non-interactive, but will probably exit with a useful hint or error.
+non-interactive, but will cautiously exit with a useful hint or error
+if there is any kind of problem.
 
 It is ultimately intended for git-savy people. As a rule of thumb, if
 you know how to complete a failed rebase, you're fine.
