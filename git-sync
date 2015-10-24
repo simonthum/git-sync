@@ -206,6 +206,13 @@ remote_name=$(git config --get branch.$branch_name.remote)
 
 if [ -z "$remote_name" ] ; then
     echo "git-sync: the current branch does not have a configured remote."
+    echo
+    echo "git-sync: Please use"
+    echo
+    echo "  git branch --set-upstream-to=[remote_name]/$branch_name" 
+    echo
+    echo "replacing [remote_name] with the name of your remote, i.e. - origin"
+    echo "to set the remote tracking branch for git-sync to work"
     exit 2
 fi
 
