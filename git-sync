@@ -329,14 +329,14 @@ case "$(sync_state)" in
 	fi
 	;;
 "diverged")
-	echo "git-sync: We have diverged. Trying to rebase..."
-	git rebase $remote_name/$branch_name
+	echo "git-sync: We have diverged. Trying to merge..."
+	git merge $remote_name/$branch_name -m "merge from $(uname -n) on $(date)" #TODO: merge options
 	if [[ $? == 0 && -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]] ; then
-	    echo "git-sync: Rebasing went fine, pushing..."
+	    echo "git-sync: Merging went fine, pushing..."
 	    git push $remote_name $branch_name:$branch_name
 	    exit_assuming_sync
 	else
-	    echo "git-sync: Rebasing failed, likely there are conflicting changes. Resolve them and finish the rebase before repeating git-sync."
+	    echo "git-sync: Merging failed, likely there are conflicting changes. Resolve them and commit before repeating git-sync."
 	    exit 1
 	fi
 	# TODO: save master, if rebasing fails, make a branch of old master
