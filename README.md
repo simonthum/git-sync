@@ -12,6 +12,10 @@ Licensed under CC0
 
 ## Use case
 
+For a really nice explanation with detailed examples, have a look at this blog post:
+
+[Automated Syncing with Git](https://worthe-it.co.za/programming/2016/08/13/automated-syncing-with-git.html)
+
 Suppose you have a set of text files you care about, multiple machines
 to work on, and a central git repository (a.k.a. bare reporitory) at
 your disposal. You do not care about atomic commits, but coarse
