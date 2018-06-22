@@ -43,6 +43,9 @@ ALL_AUTOCOMMIT_CMD="git add -A ; git commit -m \"%message\";"
 # default commit message substituted into autocommit commands
 DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 
+# method to use for sync, “rebase” or “merge”
+DEFAULT_SYNC_METHOD="rebase"
+
 
 # AUTOCOMMIT_CMD="echo \"Please commit or stash pending changes\"; exit 1;"
 # TODO mode for stash push & pop
@@ -329,14 +332,27 @@ case "$(sync_state)" in
 	fi
 	;;
 "diverged")
-	echo "git-sync: We have diverged. Trying to merge..."
-	git merge $remote_name/$branch_name -m "merge from $(uname -n) on $(date)" #TODO: merge options
+    # get the “sync_method” variable
+    
+    sync_method="$(git config --get branch.$branch_name.gitSyncMethod)"
+    if [ "" == "$sync_method" ]; then
+        sync_method=${DEFAULT_SYNC_METHOD}
+    fi
+
+	echo "git-sync: We have diverged. Trying to ${sync_method}..."
+    
+    if [ $sync_method == "rebase" ]; then
+	    git rebase $remote_name/$branch_name
+    elif [ $sync_method == "merge" ]; then
+	    git merge $remote_name/$branch_name -m "merge from $(uname -n) on $(date)" #TODO: merge options
+    fi
+        
 	if [[ $? == 0 && -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]] ; then
-	    echo "git-sync: Merging went fine, pushing..."
+	    echo "git-sync: ${sync_method} went fine, pushing..."
 	    git push $remote_name $branch_name:$branch_name
 	    exit_assuming_sync
 	else
-	    echo "git-sync: Merging failed, likely there are conflicting changes. Resolve them and commit before repeating git-sync."
+	    echo "git-sync: ${sync_method} failed, likely there are conflicting changes. Resolve them and commit before repeating git-sync."
 	    exit 1
 	fi
 	# TODO: save master, if rebasing fails, make a branch of old master
