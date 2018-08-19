@@ -46,6 +46,11 @@ DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 # method to use for sync, “rebase” or “merge”
 DEFAULT_SYNC_METHOD="rebase"
 
+# whether errors should send messages via notify-send as well as echo
+useNotify="$(git config --get branch.$branch_name.syncUseNotify)"
+if [ "true" != "$useNotify" ]; then
+    useNotify="false" # defaults to "false"
+fi
 
 # AUTOCOMMIT_CMD="echo \"Please commit or stash pending changes\"; exit 1;"
 # TODO mode for stash push & pop
@@ -92,19 +97,19 @@ git_repo_state ()
 			fi
 		elif [ "true" = "$(git rev-parse --is-inside-work-tree 2>/dev/null)" ]; then
 			git diff --no-ext-diff --quiet --exit-code || echo "|DIRTY"
-#			if [ -n "${GIT_PS1_SHOWSTASHSTATE-}" ]; then
-#			        git rev-parse --verify refs/stash >/dev/null 2>&1 && s="$"
-#			fi
-#
-#			if [ -n "${GIT_PS1_SHOWUNTRACKEDFILES-}" ]; then
-#			   if [ -n "$(git ls-files --others --exclude-standard)" ]; then
-#			      u="%"
-#			   fi
-#			fi
-#
-#			if [ -n "${GIT_PS1_SHOWUPSTREAM-}" ]; then
-#				__git_ps1_show_upstream
-#			fi
+            #			if [ -n "${GIT_PS1_SHOWSTASHSTATE-}" ]; then
+            #			        git rev-parse --verify refs/stash >/dev/null 2>&1 && s="$"
+            #			fi
+            #
+            #			if [ -n "${GIT_PS1_SHOWUNTRACKEDFILES-}" ]; then
+            #			   if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+            #			      u="%"
+            #			   fi
+            #			fi
+            #
+            #			if [ -n "${GIT_PS1_SHOWUPSTREAM-}" ]; then
+            #				__git_ps1_show_upstream
+            #			fi
 		fi
 	else
 	    echo "NOGIT"
@@ -116,15 +121,15 @@ check_initial_file_state()
 {
     local syncNew="$(git config --get --bool branch.$branch_name.syncNewFiles)"
     if [ "true" == "$syncNew" ]; then
-	# allow for new files
-	if [ ! -z "$(git status --porcelain | grep -E '^[^ \?][^M\?] *')" ]; then
-	    echo "NonNewOrModified"
-	fi
+	    # allow for new files
+	    if [ ! -z "$(git status --porcelain | grep -E '^[^ \?][^M\?] *')" ]; then
+	        echo "NonNewOrModified"
+	    fi
     else
-	# also bail on new files
-	if [ ! -z "$(git status --porcelain | grep -E '^[^ ][^M] *')" ]; then
-	    echo "NotOnlyModified"
-	fi
+	    # also bail on new files
+	    if [ ! -z "$(git status --porcelain | grep -E '^[^ ][^M] *')" ]; then
+	        echo "NotOnlyModified"
+	    fi
     fi
 }
 
@@ -133,7 +138,7 @@ check_initial_file_state()
 local_changes()
 {
     if [ ! -z "$(git status --porcelain | grep -E '^(\?\?|[MARC] |[ MARC][MD])*')" ]; then
-	echo "LocalChanges"
+	    echo "LocalChanges"
     fi
 }
 
@@ -143,38 +148,41 @@ sync_state()
     local count="$(git rev-list --count --left-right $remote_name/$branch_name...HEAD)"
 
     case "$count" in
-	"") # no upstream
-	    echo "noUpstream"
-	    false
-	    ;;
-	"0	0")
-	    echo "equal"
-	    true 
-	    ;;
-	"0	"*)
-	    echo "ahead"
-	    true
-	    ;;
-	*"	0")
-	    echo "behind"
-	    true
-	    ;;
-	*)
-	    echo "diverged"
-	    true
-	    ;;
+	    "") # no upstream
+	        echo "noUpstream"
+	        false
+	        ;;
+	    "0	0")
+	        echo "equal"
+	        true 
+	        ;;
+	    "0	"*)
+	        echo "ahead"
+	        true
+	        ;;
+	    *"	0")
+	        echo "behind"
+	        true
+	        ;;
+	    *)
+	        echo "diverged"
+	        true
+	        ;;
     esac
 }
 
 # exit, issue warning if not in sync
 exit_assuming_sync() {
     if [ "equal" == "$(sync_state)" ] ; then
-	echo "git-sync: In sync, all fine."
-	exit 0;
+	    echo "git-sync: In sync, all fine."
+	    exit 0;
     else
-	echo "git-sync: Synchronization FAILED! You should definitely check your repository carefully!"
-	echo "(Possibly a transient network problem? Please try again in that case.)"
-	exit 3
+	    echo "git-sync: Synchronization FAILED! You should definitely check your repository carefully!"
+	    echo "(Possibly a transient network problem? Please try again in that case.)"
+        if [ "true" != "$useNotify" ]; then
+            notify-send "Synchronization failed" "You should definitely check your repository carefully! (Possibly a transient network problem? Please try again in that case.)" -i sync-error
+        fi
+        exit 3
     fi
 }
 
@@ -188,9 +196,15 @@ if [[ -z "$rstate" || "|DIRTY" = "$rstate" ]]; then
     echo "git-sync: Preparing. Repo in $(__gitdir)"
 elif [[ "NOGIT" = "$rstate" ]] ; then
     echo "git-sync: No git repository detected. Exiting."
+    if [ "true" != "$useNotify" ]; then
+        notify-send "git-sync error" "No git repository detected. Exiting." -i dialog-error
+    fi
     exit 128 # matches git's error code
 else
     echo "git-sync: Git repo state considered unsafe for sync: $(git_repo_state)"
+    if [ "true" != "$useNotify" ]; then
+        notify-send "git-sync error" "Git repo state considered unsafe for sync: $(git_repo_state)" -i sync-error
+    fi
     exit 2
 fi
 
@@ -243,6 +257,9 @@ elif [[ "check" == "$1" ]]; then
     mode="check"
 else
     echo "git-sync: Mode $1 not recognized"
+    if [ "true" != "$useNotify" ]; then
+        notify-send "git-sync error" "Mode $1 not recognized" -i sync-error
+    fi
     exit 100
 fi
 
@@ -253,6 +270,9 @@ echo "git-sync: Using $remote_name/$branch_name"
 # check for intentionally unhandled file states
 if [ ! -z "$(check_initial_file_state)" ] ; then
     echo "git-sync: There are changed files you should probably handle manually."
+    if [ "true" != "$useNotify" ]; then
+        notify-send "git-sync error" "There are changed files you should probably handle manually." -i sync-error
+    fi
     git status
     exit 1
 fi
@@ -270,16 +290,16 @@ if [ ! -z "$(local_changes)" ]; then
     
     # discern the three ways to auto-commit
     if [ ! -z "$config_autocommit_cmd" ]; then
-	autocommit_cmd="$config_autocommit_cmd"
+	    autocommit_cmd="$config_autocommit_cmd"
     elif [ "true" == "$(git config --get --bool branch.$branch_name.syncNewFiles)" ]; then
-	autocommit_cmd=${ALL_AUTOCOMMIT_CMD}
+	    autocommit_cmd=${ALL_AUTOCOMMIT_CMD}
     else
         autocommit_cmd=${DEFAULT_AUTOCOMMIT_CMD}
     fi
 
     commit_msg="$(git config --get branch.$branch_name.syncCommitMsg)"
     if [ "" == "$commit_msg" ]; then
-      commit_msg=${DEFAULT_AUTOCOMMIT_MSG}
+        commit_msg=${DEFAULT_AUTOCOMMIT_MSG}
     fi
     autocommit_cmd=$(echo "$autocommit_cmd" | sed "s/%message/$commit_msg/")
 
@@ -289,8 +309,11 @@ if [ ! -z "$(local_changes)" ]; then
     # after autocommit, we should be clean
     rstate="$(git_repo_state)"
     if [[ ! -z "$rstate" ]]; then
-	echo "git-sync: Auto-commit left uncommitted changes. Please add or remove them as desired and retry."
-	exit 1
+	    echo "git-sync: Auto-commit left uncommitted changes. Please add or remove them as desired and retry."
+        if [ "true" != "$useNotify" ]; then
+            notify-send "git-sync error" "Auto-commit left uncommitted changes. Please add or remove them as desired and retry." -i sync-error
+        fi
+	    exit 1
     fi
 fi
 
@@ -300,62 +323,80 @@ echo "git-sync: Fetching from $remote_name/$branch_name"
 git fetch $remote_name $branch_name
 if [ $? != 0 ] ; then
     echo "git-sync: git fetch $remote_name returned non-zero. Likely a network problem; exiting."
+    if [ "true" != "$useNotify" ]; then
+        notify-send "git-sync error" "git fetch $remote_name returned non-zero. Likely a network problem; exiting." -i network-error
+    fi
     exit 3
 fi
 
 case "$(sync_state)" in
-"noUpstream")
-	echo "git-sync: Strange state, you're on your own. Good luck."
-	exit 2
-	;;
-"equal")
-	exit_assuming_sync
-	;;
-"ahead")
-	echo "git-sync: Pushing changes..."
-	git push $remote_name $branch_name:$branch_name
-	if [ $? == 0 ]; then
-	    exit_assuming_sync
-	else
-	    echo "git-sync: git push returned non-zero. Likely a connection failure."
-	    exit 3
-	fi
-	;;
-"behind")
-	echo "git-sync: We are behind, fast-forwarding..."
-	git merge --ff --ff-only $remote_name/$branch_name
-	if [ $? == 0 ]; then
-	    exit_assuming_sync
-	else
-	    echo "git-sync: git merge --ff --ff-only returned non-zero ($?). Exiting."
+    "noUpstream")
+	    echo "git-sync: Strange state, you're on your own. Good luck."
 	    exit 2
-	fi
-	;;
-"diverged")
-    # get the “sync_method” variable
-    
-    sync_method="$(git config --get branch.$branch_name.gitSyncMethod)"
-    if [ "" == "$sync_method" ]; then
-        sync_method=${DEFAULT_SYNC_METHOD}
-    fi
-
-	echo "git-sync: We have diverged. Trying to ${sync_method}..."
-    
-    if [ $sync_method == "rebase" ]; then
-	    git rebase $remote_name/$branch_name
-    elif [ $sync_method == "merge" ]; then
-	    git merge $remote_name/$branch_name -m "merge from $(uname -n) on $(date)" #TODO: merge options
-    fi
-        
-	if [[ $? == 0 && -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]] ; then
-	    echo "git-sync: ${sync_method} went fine, pushing..."
-	    git push $remote_name $branch_name:$branch_name
+	    ;;
+    "equal")
 	    exit_assuming_sync
-	else
-	    echo "git-sync: ${sync_method} failed, likely there are conflicting changes. Resolve them and commit before repeating git-sync."
-	    exit 1
-	fi
-	# TODO: save master, if rebasing fails, make a branch of old master
-	;;
+	    ;;
+    "ahead")
+	    echo "git-sync: Pushing changes..."
+	    git push $remote_name $branch_name:$branch_name
+	    if [ $? == 0 ]; then
+	        exit_assuming_sync
+	    else
+	        echo "git-sync: git push returned non-zero. Likely a connection failure."
+            if [ "true" != "$useNotify" ]; then
+                notify-send "git-sync: git push returned non-zero. Likely a connection failure." -i network-error
+            fi
+	        exit 3
+	    fi
+	    ;;
+    "behind")
+	    echo "git-sync: We are behind, fast-forwarding..."
+	    git merge --ff --ff-only $remote_name/$branch_name
+	    if [ $? == 0 ]; then
+	        exit_assuming_sync
+	    else
+	        echo "git-sync: git merge --ff --ff-only returned non-zero ($?). Exiting."
+            if [ "true" != "$useNotify" ]; then
+                notify-send "git-sync error" "git merge --ff --ff-only returned non-zero ($?). Exiting." -i sync-error
+            fi
+	        exit 2
+	    fi
+	    ;;
+    "diverged")
+        # get the “sync_method” variable
+        
+        sync_method="$(git config --get branch.$branch_name.gitSyncMethod)"
+        if [ "" == "$sync_method" ]; then
+            sync_method=${DEFAULT_SYNC_METHOD}
+        fi
+
+	    echo "git-sync: We have diverged. Trying to ${sync_method}..."
+        
+        if [ $sync_method == "rebase" ]; then
+	        git rebase $remote_name/$branch_name
+        elif [ $sync_method == "merge" ]; then
+	        git merge $remote_name/$branch_name -m "merge from $(uname -n) on $(date)" #TODO: merge options
+        else
+            echo "git-sync: unknown sync method \"${sync_method}\". Exiting."
+            if [ "true" != "$useNotify" ]; then
+                notify-send "git-sync: unknown sync method \"${sync_method}\". Exiting." -i sync-error
+            fi
+            exit 22 # According to "errno 22": EINVAL 22 Invalid argument
+        fi
+        
+	    if [[ $? == 0 && -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]] ; then
+	        echo "git-sync: ${sync_method} went fine, pushing..."
+	        git push $remote_name $branch_name:$branch_name
+	        exit_assuming_sync
+	    else
+	        echo "git-sync: ${sync_method} failed, likely there are conflicting changes. Resolve them and commit before repeating git-sync."
+            if [ "true" != "$useNotify" ]; then
+                notify-send "git-sync error" "${sync_method} failed, likely there are conflicting changes. Resolve them and commit before repeating git-sync." -i sync-error
+            fi
+	        exit 1
+	    fi
+	    # TODO: save master, if rebasing fails, make a branch of old master
+	    ;;
 esac
 
