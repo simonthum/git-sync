@@ -12,10 +12,6 @@ Licensed under CC0
 
 ## Use case
 
-For a really nice explanation with detailed examples, have a look at this blog post:
-
-[Automated Syncing with Git](https://worthe-it.co.za/programming/2016/08/13/automated-syncing-with-git.html)
-
 Suppose you have a set of text files you care about, multiple machines
 to work on, and a central git repository (a.k.a. bare reporitory) at
 your disposal. You do not care about atomic commits, but coarse
@@ -32,6 +28,10 @@ if there is any kind of problem.
 
 It is ultimately intended for git-savy people. As a rule of thumb, if
 you know how to complete a failed rebase, you're fine.
+
+For a really nice explanation in an advanced use case, have a look at this blog post:
+
+[Automated Syncing with Git](https://worthe-it.co.za/programming/2016/08/13/automated-syncing-with-git.html)
 
 Tested on msysgit and a real bash. In case you know bash scripting, it
 will probably make your eyes bleed, but for some reason it works.
