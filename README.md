@@ -1,14 +1,12 @@
 # git-sync
 
-sychronize tracking repositories
-
-2012 by Simon Thum
+Sychronize tracking repositories.
 
 This scrips intends to sync near-automatically via git 
 in "tracking" repositories where a nice history is not
 as crucial as having one.
 
-Licensed under CC0
+2012-2018 by Simon Thum and contributors, licensed under _CC0_
 
 ## Use case
 
