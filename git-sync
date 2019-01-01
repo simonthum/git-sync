@@ -53,11 +53,16 @@ DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 #    utility functions, some adapted from git bash completion
 #
 
+__log_msg()
+{
+    echo git-sync: $1
+}
+
 # echo the git dir
 __gitdir()
 {
-	if [ "true" = "$(git rev-parse --is-inside-work-tree)" ]; then
-		git rev-parse --git-dir 2>/dev/null
+	if [ "true" = "$(git rev-parse --is-inside-work-tree $PWD | head -1)" ]; then
+		git rev-parse --git-dir $PWD 2>/dev/null
 	fi
 }
 
@@ -166,11 +171,11 @@ sync_state()
 # exit, issue warning if not in sync
 exit_assuming_sync() {
     if [ "equal" == "$(sync_state)" ] ; then
-	echo "git-sync: In sync, all fine."
+	__log_msg "In sync, all fine."
 	exit 0;
     else
-	echo "git-sync: Synchronization FAILED! You should definitely check your repository carefully!"
-	echo "(Possibly a transient network problem? Please try again in that case.)"
+	__log_msg "Synchronization FAILED! You should definitely check your repository carefully!"
+	__log_msg "(Possibly a transient network problem? Please try again in that case.)"
 	exit 3
     fi
 }
@@ -182,12 +187,12 @@ exit_assuming_sync() {
 # first some sanity checks
 rstate="$(git_repo_state)"
 if [[ -z "$rstate" || "|DIRTY" = "$rstate" ]]; then
-    echo "git-sync: Preparing. Repo in $(__gitdir)"
+    __log_msg "Preparing. Repo in $(__gitdir)"
 elif [[ "NOGIT" = "$rstate" ]] ; then
-    echo "git-sync: No git repository detected. Exiting."
+    __log_msg "No git repository detected. Exiting."
     exit 128 # matches git's error code
 else
-    echo "git-sync: Git repo state considered unsafe for sync: $(git_repo_state)"
+    __log_msg "Git repo state considered unsafe for sync: $(git_repo_state)"
     exit 2
 fi
 
@@ -196,7 +201,7 @@ branch_name=$(git symbolic-ref -q HEAD)
 branch_name=${branch_name##refs/heads/}
 
 if [ -z "$branch_name" ] ; then
-    echo "git-sync: Syncing is only possible on a branch."
+    __log_msg "Syncing is only possible on a branch."
     git status
     exit 2
 fi
@@ -205,30 +210,30 @@ fi
 remote_name=$(git config --get branch.$branch_name.remote)
 
 if [ -z "$remote_name" ] ; then
-    echo "git-sync: the current branch does not have a configured remote."
+    __log_msg "the current branch does not have a configured remote."
     echo
-    echo "git-sync: Please use"
+    __log_msg "Please use"
     echo
-    echo "  git branch --set-upstream-to=[remote_name]/$branch_name" 
+    __log_msg "  git branch --set-upstream-to=[remote_name]/$branch_name" 
     echo
-    echo "replacing [remote_name] with the name of your remote, i.e. - origin"
-    echo "to set the remote tracking branch for git-sync to work"
+    __log_msg "replacing [remote_name] with the name of your remote, i.e. - origin"
+    __log_msg "to set the remote tracking branch for git-sync to work"
     exit 2
 fi
 
 # check if current branch is configured for sync
 if [ "true" != "$(git config --get --bool branch.$branch_name.sync)" ] ; then
     echo
-    echo "git-sync: Please use"
+    __log_msg "Please use"
     echo
-    echo "  git config --bool branch.$branch_name.sync true"
+    __log_msg "  git config --bool branch.$branch_name.sync true"
     echo
-    echo "to whitelist branch $branch_name for synchronization."
-    echo "Branch $branch_name has to have a same-named remote branch"
-    echo "for git-sync to work."
+    __log_msg "to whitelist branch $branch_name for synchronization."
+    __log_msg "Branch $branch_name has to have a same-named remote branch"
+    __log_msg "for git-sync to work."
     echo
-    echo "(If you don't know what this means, you should change that"
-    echo "before relying on this script. You have been warned.)"
+    __log_msg "(If you don't know what this means, you should change that"
+    __log_msg "before relying on this script. You have been warned.)"
     echo
     exit 1
 fi
@@ -239,24 +244,24 @@ if [[ -z "$1" || "$1" == "sync" ]]; then
 elif [[ "check" == "$1" ]]; then
     mode="check"
 else
-    echo "git-sync: Mode $1 not recognized"
+    __log_msg "Mode $1 not recognized"
     exit 100
 fi
 
-echo "git-sync: Mode $mode"
+__log_msg "Mode $mode"
 
-echo "git-sync: Using $remote_name/$branch_name"
+__log_msg "Using $remote_name/$branch_name"
 
 # check for intentionally unhandled file states
 if [ ! -z "$(check_initial_file_state)" ] ; then
-    echo "git-sync: There are changed files you should probably handle manually."
+    __log_msg "There are changed files you should probably handle manually."
     git status
     exit 1
 fi
 
 # if in check mode, this is all we need to know
 if [ $mode == "check" ] ; then
-    echo "git-sync: check OK; sync may start."
+    __log_msg "check OK; sync may start."
     exit 0
 fi
 
@@ -280,63 +285,63 @@ if [ ! -z "$(local_changes)" ]; then
     fi
     autocommit_cmd=$(echo "$autocommit_cmd" | sed "s/%message/$commit_msg/")
 
-    echo "git-sync: Committing local changes using ${autocommit_cmd}"
+    __log_msg "Committing local changes using ${autocommit_cmd}"
     eval $autocommit_cmd
 
     # after autocommit, we should be clean
     rstate="$(git_repo_state)"
     if [[ ! -z "$rstate" ]]; then
-	echo "git-sync: Auto-commit left uncommitted changes. Please add or remove them as desired and retry."
+	__log_msg "Auto-commit left uncommitted changes. Please add or remove them as desired and retry."
 	exit 1
     fi
 fi
 
 # fetch remote to get to the current sync state
 # TODO make fetching/pushing optional
-echo "git-sync: Fetching from $remote_name/$branch_name"
+__log_msg "Fetching from $remote_name/$branch_name"
 git fetch $remote_name $branch_name
 if [ $? != 0 ] ; then
-    echo "git-sync: git fetch $remote_name returned non-zero. Likely a network problem; exiting."
+    __log_msg "git fetch $remote_name returned non-zero. Likely a network problem; exiting."
     exit 3
 fi
 
 case "$(sync_state)" in
 "noUpstream")
-	echo "git-sync: Strange state, you're on your own. Good luck."
+	__log_msg "Strange state, you're on your own. Good luck."
 	exit 2
 	;;
 "equal")
 	exit_assuming_sync
 	;;
 "ahead")
-	echo "git-sync: Pushing changes..."
+	__log_msg "Pushing changes..."
 	git push $remote_name $branch_name:$branch_name
 	if [ $? == 0 ]; then
 	    exit_assuming_sync
 	else
-	    echo "git-sync: git push returned non-zero. Likely a connection failure."
+	    __log_msg "git push returned non-zero. Likely a connection failure."
 	    exit 3
 	fi
 	;;
 "behind")
-	echo "git-sync: We are behind, fast-forwarding..."
+	__log_msg "We are behind, fast-forwarding..."
 	git merge --ff --ff-only $remote_name/$branch_name
 	if [ $? == 0 ]; then
 	    exit_assuming_sync
 	else
-	    echo "git-sync: git merge --ff --ff-only returned non-zero ($?). Exiting."
+	    __log_msg "git merge --ff --ff-only returned non-zero ($?). Exiting."
 	    exit 2
 	fi
 	;;
 "diverged")
-	echo "git-sync: We have diverged. Trying to rebase..."
+	__log_msg "We have diverged. Trying to rebase..."
 	git rebase $remote_name/$branch_name
 	if [[ $? == 0 && -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]] ; then
-	    echo "git-sync: Rebasing went fine, pushing..."
+	    __log_msg "Rebasing went fine, pushing..."
 	    git push $remote_name $branch_name:$branch_name
 	    exit_assuming_sync
 	else
-	    echo "git-sync: Rebasing failed, likely there are conflicting changes. Resolve them and finish the rebase before repeating git-sync."
+	    __log_msg "Rebasing failed, likely there are conflicting changes. Resolve them and finish the rebase before repeating git-sync."
 	    exit 1
 	fi
 	# TODO: save master, if rebasing fails, make a branch of old master
