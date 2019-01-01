@@ -33,6 +33,13 @@
 # losing any data. When check returns 0, sync can start immediately.
 # This does not, however, indicate that syncing is at all likely to
 # succeed.
+#
+# extra-sync
+#
+# As well as the basic sync, the script will look for a list of extra
+# remote brances to sync with in the git config variable
+# branch.$branch_name.extra-sync (you can add this with
+# git config --add branch.$branch_name.extra-sync remotebranch`)
 
 # command used to auto-commit file modifications
 DEFAULT_AUTOCOMMIT_CMD="git add -u ; git commit -m \"%message\";"
@@ -170,6 +177,7 @@ sync_state()
 
 # exit, issue warning if not in sync
 exit_assuming_sync() {
+
     if [ "equal" == "$(sync_state)" ] ; then
 	__log_msg "In sync, all fine."
 	exit 0;
@@ -296,55 +304,59 @@ if [ ! -z "$(local_changes)" ]; then
     fi
 fi
 
+local_branch=$branch_name
+extra_branches=$(git config --get-all branch.$branch_name.extra-sync)
 # fetch remote to get to the current sync state
 # TODO make fetching/pushing optional
-__log_msg "Fetching from $remote_name/$branch_name"
-git fetch $remote_name $branch_name
+__log_msg "Fetching from $remote_name: $branch_name $extra_branches"
+git fetch $remote_name $branch_name $extra_branches -q
 if [ $? != 0 ] ; then
     __log_msg "git fetch $remote_name returned non-zero. Likely a network problem; exiting."
     exit 3
 fi
 
-case "$(sync_state)" in
-"noUpstream")
-	__log_msg "Strange state, you're on your own. Good luck."
-	exit 2
-	;;
-"equal")
-	exit_assuming_sync
-	;;
-"ahead")
-	__log_msg "Pushing changes..."
-	git push $remote_name $branch_name:$branch_name
-	if [ $? == 0 ]; then
-	    exit_assuming_sync
-	else
-	    __log_msg "git push returned non-zero. Likely a connection failure."
-	    exit 3
-	fi
-	;;
-"behind")
-	__log_msg "We are behind, fast-forwarding..."
-	git merge --ff --ff-only $remote_name/$branch_name
-	if [ $? == 0 ]; then
-	    exit_assuming_sync
-	else
-	    __log_msg "git merge --ff --ff-only returned non-zero ($?). Exiting."
-	    exit 2
-	fi
-	;;
-"diverged")
-	__log_msg "We have diverged. Trying to rebase..."
-	git rebase $remote_name/$branch_name
-	if [[ $? == 0 && -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]] ; then
-	    __log_msg "Rebasing went fine, pushing..."
-	    git push $remote_name $branch_name:$branch_name
-	    exit_assuming_sync
-	else
-	    __log_msg "Rebasing failed, likely there are conflicting changes. Resolve them and finish the rebase before repeating git-sync."
-	    exit 1
-	fi
-	# TODO: save master, if rebasing fails, make a branch of old master
-	;;
-esac
-
+for branch_name in $branch_name $extra_branches; do
+    case "$(sync_state)" in
+        "noUpstream")
+	        __log_msg "Strange state, you're on your own. Good luck."
+	        exit 2
+	        ;;
+        "equal")
+	        __log_msg "Equal with $remote_name/$branch_name"
+	        ;;
+        "ahead")
+	        __log_msg "Ahead of $remote_name/$branch_name, pushing changes..."
+	        git push $remote_name $local_branch:$branch_name -q
+	        if [ $? == 0 ]; then
+                echo ... Success!
+	        else
+	            __log_msg "git push returned non-zero. Likely a connection failure."
+	            exit 3
+	        fi
+	        ;;
+        "behind")
+	        __log_msg "Behind $remote_name/$branch_name, fast-forwarding..."
+	        git merge --ff --ff-only $remote_name/$branch_name -q
+	        if [ $? == 0 ]; then
+	            echo ... Success!
+	        else
+	            __log_msg "git merge --ff --ff-only returned non-zero ($?). Exiting."
+	            exit 2
+	        fi
+	        ;;
+        "diverged")
+	        __log_msg "Diverged from $remote_name/$branch_name. Trying to rebase..."
+	        git rebase $remote_name/$branch_name -q
+	        if [[ $? == 0 && -z "$(git_repo_state)" && "ahead" == "$(sync_state)" ]] ; then
+	            __log_msg "Rebasing went fine, pushing..."
+	            git push $remote_name $local_branch:$branch_name -q
+                echo ... Success!
+	        else
+	            __log_msg "Rebasing failed, likely there are conflicting changes. Resolve them and finish the rebase before repeating git-sync."
+	            exit 1
+	        fi
+	        # TODO: save master, if rebasing fails, make a branch of old master
+	        ;;
+    esac
+done
+exit_assuming_sync
