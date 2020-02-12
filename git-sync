@@ -61,8 +61,8 @@ __log_msg()
 # echo the git dir
 __gitdir()
 {
-	if [ "true" = "$(git rev-parse --is-inside-work-tree $PWD | head -1)" ]; then
-		git rev-parse --git-dir $PWD 2>/dev/null
+	if [ "true" = "$(git rev-parse --is-inside-work-tree "$PWD" | head -1)" ]; then
+		git rev-parse --git-dir "$PWD" 2>/dev/null
 	fi
 }
 
