@@ -1,6 +1,6 @@
 # git-sync
 
-Sychronize tracking repositories.
+Synchronize tracking repositories.
 
 This scrips intends to sync near-automatically via git 
 in "tracking" repositories where a nice history is not
