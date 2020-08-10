@@ -2,9 +2,9 @@
 #
 # git-sync
 #
-# sychronize tracking repositories
+# synchronize tracking repositories
 #
-# 2012 by Simon Thum
+# 2012-20 by Simon Thum and contributors
 # Licensed as: CC0
 #
 # This scrips intends to sync via git near-automatically
