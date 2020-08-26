@@ -49,21 +49,27 @@ DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 
 print_usage() {
     cat << EOF
-usage: $0 [-h] [MODE]
+usage: $0 [-h] [-p] [MODE]
 
 Synchronize the current branch to a remote backup
 MODE may be either "sync" (the default) or "check", to verify that the branch is ready to sync
 
 OPTIONS:
    -h      Show this message
+   -p      Try to sync with the pushRemote remote, when possible
 EOF
 }
 
-while getopts "h" opt ; do
+preferred_remote="upstream"
+
+while getopts "hp" opt ; do
     case $opt in
         h )
             print_usage
             exit 0
+            ;;
+        p )
+            preferred_remote="pushRemote"
             ;;
     esac
 done
@@ -227,7 +233,17 @@ if [ -z "$branch_name" ] ; then
 fi
 
 # while at it, determine the remote to operate on
-remote_name=$(git config --get branch.$branch_name.remote)
+if [[ "pushRemote" == "$preferred_remote" ]] ; then
+    remote_name=$(git config --get branch.$branch_name.pushRemote)
+    if [ -z "$remote_name" ] ; then
+        remote_name=$(git config --get remote.pushDefault)
+    fi
+    if [ -z "$remote_name" ] ; then
+        remote_name=$(git config --get branch.$branch_name.remote)
+    fi
+else
+    remote_name=$(git config --get branch.$branch_name.remote)
+fi
 
 if [ -z "$remote_name" ] ; then
     __log_msg "the current branch does not have a configured remote."
