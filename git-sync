@@ -49,7 +49,7 @@ DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 
 print_usage() {
     cat << EOF
-usage: $0 [-h] [-p] [MODE]
+usage: $0 [-h] [-p] [-s] [MODE]
 
 Synchronize the current branch to a remote backup
 MODE may be either "sync" (the default) or "check", to verify that the branch is ready to sync
@@ -57,12 +57,14 @@ MODE may be either "sync" (the default) or "check", to verify that the branch is
 OPTIONS:
    -h      Show this message
    -p      Try to sync with the pushRemote remote, when possible
+   -s      Sync the branch even if branch.\$branch_name.sync isn't set
 EOF
 }
 
 preferred_remote="upstream"
+sync_anyway="false"
 
-while getopts "hp" opt ; do
+while getopts "hps" opt ; do
     case $opt in
         h )
             print_usage
@@ -70,6 +72,9 @@ while getopts "hp" opt ; do
             ;;
         p )
             preferred_remote="pushRemote"
+            ;;
+        s )
+            sync_anyway="true"
             ;;
     esac
 done
@@ -258,7 +263,7 @@ if [ -z "$remote_name" ] ; then
 fi
 
 # check if current branch is configured for sync
-if [ "true" != "$(git config --get --bool branch.$branch_name.sync)" ] ; then
+if [[ "true" != "$(git config --get --bool branch.$branch_name.sync)" && "true" != "$sync_anyway" ]] ; then
     echo
     __log_msg "Please use"
     echo
