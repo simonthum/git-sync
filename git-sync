@@ -47,7 +47,27 @@ DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 # AUTOCOMMIT_CMD="echo \"Please commit or stash pending changes\"; exit 1;"
 # TODO mode for stash push & pop
 
+print_usage() {
+    cat << EOF
+usage: $0 [-h] [MODE]
 
+Synchronize the current branch to a remote backup
+MODE may be either "sync" (the default) or "check", to verify that the branch is ready to sync
+
+OPTIONS:
+   -h      Show this message
+EOF
+}
+
+while getopts "h" opt ; do
+    case $opt in
+        h )
+            print_usage
+            exit 0
+            ;;
+    esac
+done
+shift $((OPTIND-1))
 
 #
 #    utility functions, some adapted from git bash completion
