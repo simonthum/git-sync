@@ -49,26 +49,30 @@ DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 
 print_usage() {
     cat << EOF
-usage: $0 [-h] [-p] [-s] [MODE]
+usage: $0 [-h] [-n] [-p] [-s] [MODE]
 
 Synchronize the current branch to a remote backup
 MODE may be either "sync" (the default) or "check", to verify that the branch is ready to sync
 
 OPTIONS:
    -h      Show this message
+   -n      Commit new files even if branch.\$branch_name.syncNewFiles isn't set
    -p      Try to sync with the pushRemote remote, when possible
    -s      Sync the branch even if branch.\$branch_name.sync isn't set
 EOF
 }
-
+sync_new_files_anyway="false"
 preferred_remote="upstream"
 sync_anyway="false"
 
-while getopts "hps" opt ; do
+while getopts "hnps" opt ; do
     case $opt in
         h )
             print_usage
             exit 0
+            ;;
+        n )
+            sync_new_files_anyway="true"
             ;;
         p )
             preferred_remote="pushRemote"
@@ -148,7 +152,7 @@ git_repo_state ()
 check_initial_file_state()
 {
     local syncNew="$(git config --get --bool branch.$branch_name.syncNewFiles)"
-    if [ "true" == "$syncNew" ]; then
+    if [[ "true" == "$syncNew" || "true" == "$sync_new_files_anyway" ]]; then
 	# allow for new files
 	if [ ! -z "$(git status --porcelain | grep -E '^[^ \?][^M\?] *')" ]; then
 	    echo "NonNewOrModified"
@@ -314,7 +318,7 @@ if [ ! -z "$(local_changes)" ]; then
     # discern the three ways to auto-commit
     if [ ! -z "$config_autocommit_cmd" ]; then
 	autocommit_cmd="$config_autocommit_cmd"
-    elif [ "true" == "$(git config --get --bool branch.$branch_name.syncNewFiles)" ]; then
+    elif [[ "true" == "$(git config --get --bool branch.$branch_name.syncNewFiles)" || "true" == "$sync_new_files_anyway" ]]; then
 	autocommit_cmd=${ALL_AUTOCOMMIT_CMD}
     else
         autocommit_cmd=${DEFAULT_AUTOCOMMIT_CMD}
