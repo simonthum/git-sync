@@ -24,7 +24,7 @@ git and bash, but does not even try to shield you from git. It is
 non-interactive, but will cautiously exit with a useful hint or error
 if there is any kind of problem.
 
-It is ultimately intended for git-savy people. As a rule of thumb, if
+It is ultimately intended for git-savvy people. As a rule of thumb, if
 you know how to complete a failed rebase, you're fine.
 
 For a really nice explanation in an advanced use case, have a look at this blog post:
