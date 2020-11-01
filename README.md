@@ -66,13 +66,15 @@ non-zero exit code).
 
 In sync mode (the default), just calling `git-sync` inside your
 repository will sync with the current branches remote, if that
-branch is whitelisted.  The repository must not be in the middle of a
+branch is enlisted.  The repository must not be in the middle of a
 rebase, git-am, merge or whatever, not detached, and untracked files
-may also be a problem (see Options). Likely, sync will just
-work. Else, a clear error message should appear. If you don't sync in
-an intertwined manner (from multiple repositories/machines),
-`git-sync` is virtually guaranteed to succeed. Otherwise it will try
-to rebase, which may fail. This is where you'll need your git skills.
+may also be treated as an obstacle (see Options). However, sync is
+likely to just work. Else, a clear error message should appear.
+
+If you don't sync in an intertwined manner (from multiple
+repositories/machines), `git-sync` is virtually guaranteed to succeed.
+When required git-sync will try to rebase, which may fail. This is
+when you'll need your git skills.
 
 ## How does it work?
 
@@ -87,12 +89,12 @@ The flow is roughly:
 7. Relate upstream to ours. If ahead, push. If behind, fast-forward. If diverged, rebase, then push.
 6. At exit, assert sync state once more just to be safe.
 
-On the first invocation, `git-sync` will ask you to whitelist the
+On the first invocation, `git-sync` will ask you to enlist the
 current branch for sync using git config. This has to be done once for
 every repository (and branch, for completeness).
 
 Because git-sync rebases, the order of commits does not always reflect
-the order of changes. However auto-commit records originating machine
+the order of changes. However auto-commit records the originating machine
 name and time by default.
 
 ## Options

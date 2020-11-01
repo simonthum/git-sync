@@ -9,7 +9,7 @@
 #
 # This scrips intends to sync via git near-automatically
 # in "tracking" repositories where a nice history is not
-# crucial as having one.
+# crucial, but having one at all is.
 #
 # Unlike the myriad of scripts to do just that already available,
 # it follows the KISS principle: It is small, requires nothing but
@@ -27,12 +27,11 @@
 #
 # Mode check
 #
-# Check only performs the basic checks sync checks for to
-# make sure the repository is in a state sufficiently "normal"
-# to continue syncing, i.e. committing changes, pull etc. without
-# losing any data. When check returns 0, sync can start immediately.
-# This does not, however, indicate that syncing is at all likely to
-# succeed.
+# Check only performs the basic checks to make sure the repository
+# is in an orderly state to continue syncing, i.e. committing
+# changes, pull etc. without losing any data. When check returns
+# 0, sync can start immediately. This does not, however, indicate
+# that syncing is at all likely to succeed.
 
 # command used to auto-commit file modifications
 DEFAULT_AUTOCOMMIT_CMD="git add -u ; git commit -m \"%message\";"
@@ -264,7 +263,7 @@ if [[ "true" != "$(git config --get --bool branch.$branch_name.sync)" && "true" 
     echo
     __log_msg "  git config --bool branch.$branch_name.sync true"
     echo
-    __log_msg "to whitelist branch $branch_name for synchronization."
+    __log_msg "to enlist branch $branch_name for synchronization."
     __log_msg "Branch $branch_name has to have a same-named remote branch"
     __log_msg "for git-sync to work."
     echo
