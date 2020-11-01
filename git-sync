@@ -57,15 +57,13 @@ MODE may be either "sync" (the default) or "check", to verify that the branch is
 OPTIONS:
    -h      Show this message
    -n      Commit new files even if branch.\$branch_name.syncNewFiles isn't set
-   -p      Try to sync with the pushRemote remote, when possible
    -s      Sync the branch even if branch.\$branch_name.sync isn't set
 EOF
 }
 sync_new_files_anyway="false"
-preferred_remote="upstream"
 sync_anyway="false"
 
-while getopts "hnps" opt ; do
+while getopts "hns" opt ; do
     case $opt in
         h )
             print_usage
@@ -73,9 +71,6 @@ while getopts "hnps" opt ; do
             ;;
         n )
             sync_new_files_anyway="true"
-            ;;
-        p )
-            preferred_remote="pushRemote"
             ;;
         s )
             sync_anyway="true"
@@ -242,15 +237,11 @@ if [ -z "$branch_name" ] ; then
 fi
 
 # while at it, determine the remote to operate on
-if [[ "pushRemote" == "$preferred_remote" ]] ; then
-    remote_name=$(git config --get branch.$branch_name.pushRemote)
-    if [ -z "$remote_name" ] ; then
-        remote_name=$(git config --get remote.pushDefault)
-    fi
-    if [ -z "$remote_name" ] ; then
-        remote_name=$(git config --get branch.$branch_name.remote)
-    fi
-else
+remote_name=$(git config --get branch.$branch_name.pushRemote)
+if [ -z "$remote_name" ] ; then
+    remote_name=$(git config --get remote.pushDefault)
+fi
+if [ -z "$remote_name" ] ; then
     remote_name=$(git config --get branch.$branch_name.remote)
 fi
 

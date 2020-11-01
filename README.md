@@ -136,14 +136,6 @@ even if the matching `git config` option is not set.
 `-s` is the equivalent of `branch.$branch_name.sync`, allowing syncing a branch
 even if the matching `git config` option is not set.
 
-`-p` controls how the choice of remote to use for backing up. If it is set,
-then instead of simply relying on `branch.$branch_name.remote` to select the
-backup remote, the script uses also considers the branch's pushRemote. As
-explained [in the docs](https://git-scm.com/docs/git-config), there are three
-`git config` options that specify the remote to push to by default, with
-`branch.$branch_name.pushRemote` overriding `remote.pushDefault` which in turn
-overrides `branch.$branch_name.remote`. The `-p` flag adopts this logic.
-
 # License
 
 I declare this work to be useable under the provisions of the CC0 license.
