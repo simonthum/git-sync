@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 GIT_SYNC_DIRECTORY="${GIT_SYNC_DIRECTORY:-$(pwd)}"
-GIT_SYNC_INTERVAL="${GIT_SYNC_INTERVAL:-60}"
 GIT_SYNC_COMMAND="${GIT_SYNC_COMMAND:-git-sync}"
+GIT_SYNC_INTERVAL="${GIT_SYNC_INTERVAL:-500}"
 
 # Initialize the directory
 if [ ! -d  "$GIT_SYNC_DIRECTORY" ]; then
@@ -19,7 +19,7 @@ fi
 
 cd "$GIT_SYNC_DIRECTORY"
 
-echo "Syncing $(git remote get-url $(git remote | head -n 1 )) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL"
+echo "Syncing $(git remote get-url $(git config --get branch.$branch_name.pushRemote)) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL"
 
 while true; do
 	changedFile=$(
