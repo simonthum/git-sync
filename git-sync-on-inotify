@@ -19,7 +19,9 @@ fi
 
 cd "$GIT_SYNC_DIRECTORY"
 
-echo "Syncing $(git remote get-url $(git config --get branch.$branch_name.pushRemote)) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL"
+remote_name=$(git config --get branch.$(basename $(git symbolic-ref -q HEAD)).pushRemote)
+
+echo "Syncing $(git remote get-url $remote_name) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL"
 
 while true; do
 	changedFile=$(
