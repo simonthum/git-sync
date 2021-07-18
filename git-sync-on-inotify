@@ -6,7 +6,7 @@ GIT_SYNC_INTERVAL="${GIT_SYNC_INTERVAL:-500}"
 
 # Initialize the directory
 if [ ! -d  "$GIT_SYNC_DIRECTORY" ]; then
-	if [ -z $value ]; then
+	if [ -z "$GIT_SYNC_REPOSITORY" ]; then
 		echo "Please specify a value for GIT_SYNC_REPOSITORY in order to initialize the git repository"
 		exit 1
 	else
