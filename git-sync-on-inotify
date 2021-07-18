@@ -6,7 +6,7 @@ GIT_SYNC_INTERVAL="${GIT_SYNC_INTERVAL:-500}"
 
 # Initialize the directory
 if [ ! -d  "$GIT_SYNC_DIRECTORY" ]; then
-	if [ -z $value ]; then
+	if [ -z "$GIT_SYNC_REPOSITORY" ]; then
 		echo "Please specify a value for GIT_SYNC_REPOSITORY in order to initialize the git repository"
 		exit 1
 	else
@@ -19,11 +19,13 @@ fi
 
 cd "$GIT_SYNC_DIRECTORY"
 
-echo "Syncing $(git remote get-url $(git config --get branch.$branch_name.pushRemote)) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL"
+remote_name=$(git config --get branch.$(basename $(git symbolic-ref -q HEAD)).pushRemote)
+
+echo "Syncing $(git remote get-url $remote_name) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL"
 
 while true; do
 	changedFile=$(
-		inotifywait ./ -r -e modify,move,create,delete \
+		inotifywait "$GIT_SYNC_DIRECTORY" -r -e modify,move,create,delete \
 			--format "%w%f" --exclude '\.git' -t "$GIT_SYNC_INTERVAL" 2>/dev/null
 	)
 	if [ -z "$changedFile" ]
