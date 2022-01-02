@@ -151,6 +151,18 @@ system which are triggered by any edits you make to files in the git repository.
 This means that updates are near instantaneous, without the need to resort to
 polling. `git-sync-on-inotify` still does a polling call to `git-sync` to ensure that changes from the upstream do make it in. This polling interval is configurable with the environment variable `GIT_SYNC_INTERVAL`.
 
+By design, this solution may miss changes until the next
+GIT_SYNC_INTERVAL time.
+
+## modd.conf
+
+Automatically sync upon local filesystem changes using modd.
+
+https://github.com/cortesi/modd
+
+This is a more robust solution to sync on local chances, but will not
+poll upstream except on startup. If you manage not to interleave
+sessions, that's fine.
 
 # License
 
