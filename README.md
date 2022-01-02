@@ -138,7 +138,9 @@ even if the matching `git config` option is not set.
 `-s` is the equivalent of `branch.$branch_name.sync`, allowing syncing a branch
 even if the matching `git config` option is not set.
 
-# git-sync-on-inotify
+# contrib/ contents
+
+## git-sync-on-inotify
 
 Automatically synchronize your git repository whenever a file is touched.
 
