@@ -6,7 +6,7 @@ This scrips intends to sync near-automatically via git
 in "tracking" repositories where a nice history is not
 as crucial as having one.
 
-2012-2018 by Simon Thum and contributors, licensed under _CC0_
+2012-2022 by Simon Thum and contributors, licensed under _CC0_
 
 ## Use case
 
@@ -16,7 +16,7 @@ your disposal. You do not care about atomic commits, but coarse
 versioning and backup is grave. For example, server configuration or
 [org-mode](http://orgmode.org) files.
 
-In that case, git-sync will help you keep things in sync.
+In that case, `git-sync` will help you keep things in sync.
 
 Unlike the myriad of scripts to do just that already available,
 it follows the KISS principle: It is safe, small, requires nothing but
@@ -27,16 +27,18 @@ if there is any kind of problem.
 It is ultimately intended for git-savvy people. As a rule of thumb, if
 you know how to complete a failed rebase, you're fine.
 
-For a really nice explanation in an advanced use case, have a look at this blog post:
+To synchronize automatically on filesystem changes, have a look at the
+`contrib` directory. Alternatively, here is an older blog about automatic
+`git-sync` operation:
 
 [Automated Syncing with Git](https://worthe-it.co.za/programming/2016/08/13/automated-syncing-with-git.html)
 
 Tested on msysgit and a real bash. In case you know bash scripting, it
 will probably make your eyes bleed, but for some reason it works.
 
-### What does it do?
+### What does `git-sync` do?
 
-It will likely get from you from a dull normal git repo with some
+`git-sync` will likely get from you from a dull normal git repo with some
 changes to an updated dull normal git repo equal to origin. It does
 this by commiting, pulling & pushing as appropriate.
 
@@ -50,7 +52,7 @@ as something non-trivial occurs. It is designed to be safe
 in that `git-sync` will likely refuse to do anything not known to
 be safe.
 
-You can invoke git-sync in "check" mode, in which git-sync will not do
+You can invoke git-sync in "check" mode, in which `git-sync` will not do
 anything except return zero if syncing may start, and non-zero if
 manual intervention is required.
 
@@ -60,7 +62,7 @@ manual intervention is required.
 
 Mode can be empty, sync, or check.
 
-In "check" mode, it will indicate if syncing may start. This is useful
+In "check" mode, `git-sync` will indicate if synchronization may start. This is useful
 to see if manual intervention is required (indicated by text and
 non-zero exit code).
 
@@ -138,7 +140,7 @@ even if the matching `git config` option is not set.
 `-s` is the equivalent of `branch.$branch_name.sync`, allowing syncing a branch
 even if the matching `git config` option is not set.
 
-# contrib/ contents
+# `contrib` contents
 
 ## git-sync-on-inotify
 
