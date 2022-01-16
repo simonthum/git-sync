@@ -82,12 +82,12 @@ when you'll need your git skills.
 
 The flow is roughly:
 
-1. sanity checks. You don't want to do this in the middle of a rebase.
-2. Check for new files; exit if there are, unless allowed (see Options). In check mode, exit with 0 at this point.
+1. Sanity checks. You don't want to do this in the middle of a rebase.
+2. Check for new files; exit if there are, unless allowed (see Options). In check mode, exit with 0.
 3. Check for auto-commitable changes.
-4. perform auto-commit if there are (see Options)
-5. one more check for leftover changes / general tidyness
-6. fetch upstream
+4. Perform auto-commit if there are any, see options.
+5. Do one more check for leftover changes / general tidyness.
+6. Fetch the upstream.
 7. Relate upstream to ours. If ahead, push. If behind, fast-forward. If diverged, rebase, then push.
 6. At exit, assert sync state once more just to be safe.
 
