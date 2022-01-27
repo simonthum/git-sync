@@ -11,7 +11,7 @@ as crucial as having one.
 ## Use case
 
 Suppose you have a set of text files you care about, multiple machines
-to work on, and a central git repository (a.k.a. bare reporitory) at
+to work on, and a central git repository (a.k.a. bare repository) at
 your disposal. You do not care about atomic commits, but coarse
 versioning and backup is grave. For example, server configuration or
 [org-mode](http://orgmode.org) files.
@@ -35,6 +35,8 @@ To synchronize automatically on filesystem changes, have a look at the
 
 Tested on msysgit and a real bash. In case you know bash scripting, it
 will probably make your eyes bleed, but for some reason it works.
+
+If you prefer, there is a [Typescript implementation](https://github.com/tiddly-gittly/git-sync-js) too.
 
 ### What does `git-sync` do?
 
