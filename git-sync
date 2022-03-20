@@ -7,7 +7,7 @@
 # 2012-20 by Simon Thum and contributors
 # Licensed as: CC0
 #
-# This scrips intends to sync via git near-automatically
+# This script intends to sync via git near-automatically
 # in "tracking" repositories where a nice history is not
 # crucial, but having one at all is.
 #
