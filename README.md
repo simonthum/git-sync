@@ -2,7 +2,7 @@
 
 Synchronize tracking repositories.
 
-This scrips intends to sync near-automatically via git
+This script intends to sync near-automatically via git
 in "tracking" repositories where a nice history is not
 as crucial as having one.
 
@@ -40,7 +40,7 @@ If you prefer, there is a [Typescript implementation](https://github.com/tiddly-
 
 ### What does `git-sync` do?
 
-`git-sync` will likely get from you from a dull normal git repo with some
+`git-sync` will likely get you from a dull normal git repo with some
 changes to an updated dull normal git repo equal to origin. It does
 this by commiting, pulling & pushing as appropriate.
 
@@ -109,7 +109,7 @@ There are three `git config`-based options for tailoring your sync:
 
 Tells git-sync to invoke auto-commit even if new (untracked) files are
 present. Normally you have to commit those yourself to prevent
-accidential additions. git-sync will exit at stage 3 with an
+accidental additions. git-sync will exit at stage 3 with an
 explanation in that case.
 
     branch.$branch_name.syncCommitMsg (string)
