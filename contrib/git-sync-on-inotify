@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 GIT_SYNC_DIRECTORY="${GIT_SYNC_DIRECTORY:-$(pwd)}"
 GIT_SYNC_COMMAND="${GIT_SYNC_COMMAND:-git-sync}"
 GIT_SYNC_INTERVAL="${GIT_SYNC_INTERVAL:-500}"
@@ -14,14 +13,22 @@ if [ ! -d  "$GIT_SYNC_DIRECTORY" ]; then
 		mkdir -p "$base"
 		cd "$base"
 		git clone "$GIT_SYNC_REPOSITORY" "$(basename $GIT_SYNC_DIRECTORY)"
+		cd "$GIT_SYNC_DIRECTORY"
+		git config --add branch.$(basename $(git symbolic-ref -q HEAD)).pushRemote origin
 	fi
+fi
+
+if [ ! -d "$GIT_SYNC_DIRECTORY" ]; then
+	echo "Sync directory: $GIT_SYNC_DIRECTORY does not exist and could not be created."
+	exit 1
 fi
 
 cd "$GIT_SYNC_DIRECTORY"
 
 remote_name=$(git config --get branch.$(basename $(git symbolic-ref -q HEAD)).pushRemote)
-
 echo "Syncing $(git remote get-url $remote_name) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL"
+
+$GIT_SYNC_COMMAND -n -s
 
 while true; do
 	changedFile=$(
