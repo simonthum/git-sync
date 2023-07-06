@@ -26,12 +26,13 @@ fi
 
 cd "$GIT_SYNC_DIRECTORY"
 
-remote_name=$(git config --get branch.$(basename $(git symbolic-ref -q HEAD)).remote)
+remote_name=$(git config --get branch.$(basename $(git symbolic-ref -q HEAD)).pushRemote)
 
 echo "Syncing $(git remote get-url $remote_name) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL and a sleep time of $GIT_SLEEP_TIME"
-last_sync=$(date +%s)
 
 $GIT_SYNC_COMMAND -n -s
+
+last_sync=$(date +%s)
 
 while true; do
     changedFile=$(
