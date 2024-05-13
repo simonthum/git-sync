@@ -80,6 +80,10 @@ repositories/machines), `git-sync` is virtually guaranteed to succeed.
 When required git-sync will try to rebase, which may fail. This is
 when you'll need your git skills.
 
+If you want to use it programmatically or want fine-grain control
+over internal steps, you can have a try on [git-sync-js](https://github.com/tiddly-gittly/git-sync-js). Which is
+a typescript implementation of git-sync that follows the same logic.
+
 ## How does it work?
 
 The flow is roughly:
