@@ -9,10 +9,12 @@ if [ ! -d  "$GIT_SYNC_DIRECTORY" ]; then
 		echo "Please specify a value for GIT_SYNC_REPOSITORY in order to initialize the git repository"
 		exit 1
 	else
-	    base="$(dirname $GIT_SYNC_DIRECTORY)"
-		mkdir -p "$base"
-		cd "$base"
-		git clone "$GIT_SYNC_REPOSITORY" "$(basename $GIT_SYNC_DIRECTORY)"
+		parent_dir=$(dirname "$GIT_SYNC_DIRECTORY")
+		mkdir -p "$parent_dir"
+		cd "$parent_dir"
+
+		base_dir=$(basename "$GIT_SYNC_DIRECTORY")
+		git clone "$GIT_SYNC_REPOSITORY" "$base_dir"
 		cd "$GIT_SYNC_DIRECTORY"
 		git config --add branch.$(basename $(git symbolic-ref -q HEAD)).pushRemote origin
 	fi
