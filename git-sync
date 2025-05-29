@@ -33,12 +33,6 @@
 # 0, sync can start immediately. This does not, however, indicate
 # that syncing is at all likely to succeed.
 
-# command used to auto-commit file modifications
-DEFAULT_AUTOCOMMIT_CMD="git add -u ; git commit -m \"%message\";"
-
-# command used to auto-commit all changes
-ALL_AUTOCOMMIT_CMD="git add -A ; git commit -m \"%message\";"
-
 # default commit message substituted into autocommit commands
 DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 
@@ -48,12 +42,13 @@ DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 
 print_usage() {
     cat << EOF
-usage: $0 [-h] [-n] [-s] [MODE]
+usage: $0 [-c COMMITOPTS] [-h] [-n] [-s] [MODE]
 
 Synchronize the current branch to a remote backup
 MODE may be either "sync" (the default) or "check", to verify that the branch is ready to sync
 
 OPTIONS:
+   -c      Take a string of additional CLI options to pass to git commit
    -h      Show this message
    -n      Commit new files even if branch.\$branch_name.syncNewFiles isn't set
    -s      Sync the branch even if branch.\$branch_name.sync isn't set
@@ -61,9 +56,13 @@ EOF
 }
 sync_new_files_anyway="false"
 sync_anyway="false"
+commitopts=""
 
-while getopts "hns" opt ; do
+while getopts "c:hns" opt ; do
     case $opt in
+        c )
+            commitopts="$OPTARG"
+            ;;
         h )
             print_usage
             exit 0
@@ -77,6 +76,12 @@ while getopts "hns" opt ; do
     esac
 done
 shift $((OPTIND-1))
+
+# command used to auto-commit file modifications
+DEFAULT_AUTOCOMMIT_CMD="git add -u ; git commit $commitopts -m \"%message\";"
+
+# command used to auto-commit all changes
+ALL_AUTOCOMMIT_CMD="git add -A ; git commit $commitopts -m \"%message\";"
 
 #
 #    utility functions, some adapted from git bash completion

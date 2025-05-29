@@ -146,6 +146,9 @@ even if the matching `git config` option is not set.
 `-s` is the equivalent of `branch.$branch_name.sync`, allowing syncing a branch
 even if the matching `git config` option is not set.
 
+`-c COMMITOPTS` allows passing additional command-line arguments to the `git commit` action.
+This allows support for less common workflows, like setting `--no-verify` to bypass strict pre-commit hooks, or adding a GPG signing key to the generated commits.
+
 # `contrib` contents
 
 ## git-sync-on-inotify
