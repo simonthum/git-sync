@@ -107,7 +107,7 @@ name and time by default.
 
 ## Options
 
-There are three `git config`-based options for tailoring your sync:
+There are several `git config`-based options for tailoring your sync:
 
     branch.$branch_name.syncNewFiles (bool)
 
@@ -115,6 +115,12 @@ Tells git-sync to invoke auto-commit even if new (untracked) files are
 present. Normally you have to commit those yourself to prevent
 accidental additions. git-sync will exit at stage 3 with an
 explanation in that case.
+
+    branch.$branch_name.syncSkipHooks (bool) and git-sync.syncSkipHooks (bool)
+
+Tell git-sync to disable the pre-commit hook when creating the automated
+commit. Both flags have the same meaning, and the branch-specific one can be
+used to override the settings of the generic flag on a per-branch basis.
 
     branch.$branch_name.syncCommitMsg (string)
 
@@ -135,6 +141,9 @@ By default, commit is done using:
 Or if you enable `syncNewFiles`:
 
     git add -A ; git commit -m \"changes from $(uname -n) on $(date)\";"
+
+In both cases, setting the `syncSkipHooks` will add `--no-verify` to the `git
+commit` step.
 
 ### Command-line flags
 
