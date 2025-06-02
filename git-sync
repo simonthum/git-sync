@@ -102,7 +102,19 @@ __gitadd()
 # compose the commit step command
 __gitcommit()
 {
-    echo git commit -m \"%message\"
+    skip_hooks="$(git config --get --bool branch.$branch_name.syncSkipHooks)"
+    if [ -z "$skip_hooks" ] ; then
+        skip_hooks="$(git config --get --bool git-sync.syncSkipHooks)"
+    fi
+    if [ -z "$skip_hooks" ] ; then
+        skip_hooks="false"
+    fi
+
+    if [[ "true" == "$skip_hooks" ]]; then
+        echo git commit --no-verify -m \"%message\"
+    else
+        echo git commit -m \"%message\"
+    fi
 }
 
 # echos repo state
