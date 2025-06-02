@@ -6,7 +6,7 @@ This script intends to sync near-automatically via git
 in "tracking" repositories where a nice history is not
 as crucial as having one.
 
-2012-2022 by Simon Thum and contributors, licensed under _CC0_
+2012-2025 by Simon Thum and contributors, licensed under _CC0_
 
 ## Use case
 
