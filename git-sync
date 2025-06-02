@@ -33,12 +33,6 @@
 # 0, sync can start immediately. This does not, however, indicate
 # that syncing is at all likely to succeed.
 
-# command used to auto-commit file modifications
-DEFAULT_AUTOCOMMIT_CMD="git add -u ; git commit -m \"%message\";"
-
-# command used to auto-commit all changes
-ALL_AUTOCOMMIT_CMD="git add -A ; git commit -m \"%message\";"
-
 # default commit message substituted into autocommit commands
 DEFAULT_AUTOCOMMIT_MSG="changes from $(uname -n) on $(date)"
 
@@ -93,6 +87,22 @@ __gitdir()
 	if [ "true" = "$(git rev-parse --is-inside-work-tree "$PWD" | head -1)" ]; then
 		git rev-parse --git-dir "$PWD" 2>/dev/null
 	fi
+}
+
+# compose the add step command
+__gitadd()
+{
+    if [[ "true" == "$(git config --get --bool branch.$branch_name.syncNewFiles)" || "true" == "$sync_new_files_anyway" ]]; then
+        echo git add -A
+    else
+        echo git add -u
+    fi
+}
+
+# compose the commit step command
+__gitcommit()
+{
+    echo git commit -m \"%message\"
 }
 
 # echos repo state
@@ -308,10 +318,8 @@ if [ ! -z "$(local_changes)" ]; then
     # discern the three ways to auto-commit
     if [ ! -z "$config_autocommit_cmd" ]; then
 	autocommit_cmd="$config_autocommit_cmd"
-    elif [[ "true" == "$(git config --get --bool branch.$branch_name.syncNewFiles)" || "true" == "$sync_new_files_anyway" ]]; then
-	autocommit_cmd=${ALL_AUTOCOMMIT_CMD}
     else
-        autocommit_cmd=${DEFAULT_AUTOCOMMIT_CMD}
+        autocommit_cmd="$(__gitadd); $(__gitcommit);"
     fi
 
     commit_msg="$(git config --get branch.$branch_name.syncCommitMsg)"
