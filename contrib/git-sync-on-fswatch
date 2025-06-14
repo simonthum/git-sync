@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+GIT_SYNC_DIRECTORY="${GIT_SYNC_DIRECTORY:-$(pwd)}"
+GIT_SYNC_COMMAND="${GIT_SYNC_COMMAND:-git-sync}"
+# In seconds
+GIT_SYNC_INTERVAL="${GIT_SYNC_INTERVAL:-60}"
+
+# Initialize the directory
+if [ ! -d  "$GIT_SYNC_DIRECTORY" ]; then
+	if [ -z "$GIT_SYNC_REPOSITORY" ]; then
+		echo "Please specify a value for GIT_SYNC_REPOSITORY in order to initialize the git repository"
+		exit 1
+	else
+		parent_dir=$(dirname "$GIT_SYNC_DIRECTORY")
+		mkdir -p "$parent_dir"
+		cd "$parent_dir"
+
+		base_dir=$(basename "$GIT_SYNC_DIRECTORY")
+		git clone "$GIT_SYNC_REPOSITORY" "$base_dir"
+		cd "$GIT_SYNC_DIRECTORY"
+		git config --add branch.$(basename $(git symbolic-ref -q HEAD)).pushRemote origin
+	fi
+fi
+
+if [ ! -d "$GIT_SYNC_DIRECTORY" ]; then
+	echo "Sync directory: $GIT_SYNC_DIRECTORY does not exist and could not be created."
+	exit 1
+fi
+
+cd "$GIT_SYNC_DIRECTORY"
+
+remote_name=$(git config --get branch.$(basename $(git symbolic-ref -q HEAD)).remote)
+echo "Syncing $(git remote get-url $remote_name) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL"
+
+$GIT_SYNC_COMMAND -n -s
+
+while true; do
+	changedFile=$(
+        timeout $GIT_SYNC_INTERVAL \
+		fswatch --exclude '\.git' --one-event --event MovedTo --event Updated --event Renamed --event Removed --event Created "$GIT_SYNC_DIRECTORY" \
+			--format-time "%w%f" 2>/dev/null
+	)
+	if [ -z "$changedFile" ]
+	then
+		echo "Syncing due to timeout"
+		$GIT_SYNC_COMMAND -n -s
+	else
+		echo "Syncing for: $changedFile"
+		{ git check-ignore "$changedFile" > /dev/null; } || $GIT_SYNC_COMMAND -n -s
+	fi
+done
