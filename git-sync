@@ -89,10 +89,28 @@ __gitdir()
 	fi
 }
 
+__syncnew_flag()
+{
+    if [[ "true" == "$sync_new_files_anyway" ]]; then
+        echo "true"
+        return
+    fi
+
+    syncnew_flag="$(git config --get --bool branch.$branch_name.syncNewFiles)"
+    if [ -z "$syncnew_flag" ] ; then
+        syncnew_flag="$(git config --get --bool git-sync.syncNewFiles)"
+    fi
+    if [ -z "$syncnew_flag" ] ; then
+        syncnew_flag="false"
+    fi
+
+    echo "$syncnew_flag"
+}
+
 # compose the add step command
 __gitadd()
 {
-    if [[ "true" == "$(git config --get --bool branch.$branch_name.syncNewFiles)" || "true" == "$sync_new_files_anyway" ]]; then
+    if [[ "true" == "$(__syncnew_flag)" ]]; then
         echo git add -A
     else
         echo git add -u
@@ -167,8 +185,7 @@ git_repo_state ()
 # check if we only have untouched, modified or (if configured) new files
 check_initial_file_state()
 {
-    local syncNew="$(git config --get --bool branch.$branch_name.syncNewFiles)"
-    if [[ "true" == "$syncNew" || "true" == "$sync_new_files_anyway" ]]; then
+    if [[ "true" == "$(__syncnew_flag)" ]]; then
 	# allow for new files
 	if [ ! -z "$(git status --porcelain | grep -E '^[^ \?][^M\?] *')" ]; then
 	    echo "NonNewOrModified"
