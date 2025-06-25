@@ -174,10 +174,19 @@ Automatically synchronize your git repository whenever a file is touched.
 files as soon as they happen. `inotifywait` waits for events from the operating
 system which are triggered by any edits you make to files in the git repository.
 This means that updates are near instantaneous, without the need to resort to
-polling. `git-sync-on-inotify` still does a polling call to `git-sync` to ensure that changes from the upstream do make it in. This polling interval is configurable with the environment variable `GIT_SYNC_INTERVAL`.
+polling. `git-sync-on-inotify` still does a polling call to `git-sync` to
+ensure that changes from the upstream do make it in. This polling interval
+is configurable with the environment variable `GIT_SYNC_INTERVAL`.
 
 By design, this solution may miss changes until the next
 GIT_SYNC_INTERVAL time.
+
+## git-sync-on-fswatch
+
+Works much like `git-sync-on-inotify`, from which it was derived, to
+automatically sync when triggered by file system watches.
+
+https://emcrisostomo.github.io/fswatch/
 
 ## modd.conf
 
