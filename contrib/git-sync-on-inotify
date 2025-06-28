@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 GIT_SYNC_DIRECTORY="${GIT_SYNC_DIRECTORY:-$(pwd)}"
 GIT_SYNC_COMMAND="${GIT_SYNC_COMMAND:-git-sync}"
-GIT_SYNC_INTERVAL="${GIT_SYNC_INTERVAL:-500}"
+GIT_SYNC_INTERVAL="${GIT_SYNC_INTERVAL:-600}"
+GIT_SLEEP_TIME=$((GIT_SYNC_INTERVAL - 10))
+
+# Check if inotif exist otherwise exit
+if [ ! type inotifywait &> /dev/null ]; then
+  echo "inotifywait does not exist. exiting"
+  exit 1
+fi
+
 
 # Initialize the directory
 if [ ! -d  "$GIT_SYNC_DIRECTORY" ]; then
@@ -28,21 +36,23 @@ fi
 cd "$GIT_SYNC_DIRECTORY"
 
 remote_name=$(git config --get branch.$(basename $(git symbolic-ref -q HEAD)).pushRemote)
-echo "Syncing $(git remote get-url $remote_name) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL"
+
+echo "Syncing $(git remote get-url $remote_name) at $(pwd) with a default sync interval of $GIT_SYNC_INTERVAL and a sleep time of $GIT_SLEEP_TIME"
 
 $GIT_SYNC_COMMAND -n -s
 
+last_sync=$(date +%s)
+
 while true; do
-	changedFile=$(
-		inotifywait "$GIT_SYNC_DIRECTORY" -r -e modify,move,create,delete \
-			--format "%w%f" --exclude '\.git' -t "$GIT_SYNC_INTERVAL" 2>/dev/null
-	)
-	if [ -z "$changedFile" ]
-	then
-		echo "Syncing due to timeout"
-		$GIT_SYNC_COMMAND -n -s
-	else
-		echo "Syncing for: $changedFile"
-		{ git check-ignore "$changedFile" > /dev/null; } || $GIT_SYNC_COMMAND -n -s
-	fi
+    changedFile=$(
+        inotifywait "$GIT_SYNC_DIRECTORY" -r -e modify,move,create,delete \
+            --format "%w%f" --exclude '\.git' -t "$GIT_SYNC_INTERVAL" 2>/dev/null
+    )
+    current_time=$(date +%s)
+    time_since_last_sync=$((current_time - last_sync))
+    if [ ! -z "$changedFile" ] && [ $time_since_last_sync -ge $GIT_SLEEP_TIME ]; then
+        echo "Syncing for: $changedFile"
+        { git check-ignore "$changedFile" >/dev/null; } || $GIT_SYNC_COMMAND -n -s
+        last_sync=$(date +%s)
+    fi
 done
